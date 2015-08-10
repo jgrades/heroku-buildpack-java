@@ -30,6 +30,10 @@ status_done
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
+mkdir -p /var/log/jgrades
+mkdir -p /etc/opt/jgrades
+mkdir -p /var/backups/jgrades
+
 # change to cache dir to install maven
 cd $CACHE_DIR
 install_maven ${CACHE_DIR} ${BUILD_DIR}
@@ -48,9 +52,6 @@ else
   unset MAVEN_SETTINGS_OPT
 fi
 
-# change to build dir to run maven
-cd $BUILD_DIR
-
 export MAVEN_OPTS="-Xmx1024m ${MAVEN_JAVA_OPTS} -Duser.home=$BUILD_DIR -Dmaven.repo.local=$CACHE_DIR/.m2/repository"
 
 # build app
@@ -60,7 +61,18 @@ mvnOpts="${mvnOpts} ${MAVEN_CUSTOM_OPTS:-"-DskipTests=true"}"
 mvnOpts="${mvnOpts} ${MAVEN_CUSTOM_GOALS:-"clean install"}"
 
 status "Executing: mvn ${mvnOpts}"
-$CACHE_DIR/.maven/bin/mvn ${mvnOpts} | indent
+# change to build dir to run maven
+cd $BUILD_DIR/jg-bom
+$CACHE_DIR/.maven/bin/mvn clean install | indent
+
+cd $BUILD_DIR
+$CACHE_DIR/.maven/bin/mvn clean install -Pprod -DskipTests | indent
+
+cd $BUILD_DIR/jg-backend/installation/jg-install/target/classes
+cp jg-ks.jceks /etc/opt/jgrades
+cp sec.dat /etc/opt/jgrades
+
+cd $BUILD_DIR
 
 if [ "${PIPESTATUS[*]}" != "0 0" ]; then
   error "Failed to build app with Maven
