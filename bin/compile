@@ -30,9 +30,9 @@ status_done
 #create the cache dir if it doesn't exist
 mkdir -p $CACHE_DIR
 
-mkdir -p /var/log/jgrades
-mkdir -p /etc/opt/jgrades
-mkdir -p /var/backups/jgrades
+mkdir -p $HOME/log
+mkdir -p $HOME/internal
+mkdir -p $HOME/backups
 
 # change to cache dir to install maven
 cd $CACHE_DIR
@@ -66,11 +66,11 @@ cd $BUILD_DIR/jg-bom
 $CACHE_DIR/.maven/bin/mvn clean install | indent
 
 cd $BUILD_DIR
-$CACHE_DIR/.maven/bin/mvn clean install -Pprod -DskipTests | indent
+$CACHE_DIR/.maven/bin/mvn clean install -Pheroku -DskipTests | indent
 
 cd $BUILD_DIR/jg-backend/installation/jg-install/target/classes
-cp jg-ks.jceks /etc/opt/jgrades
-cp sec.dat /etc/opt/jgrades
+cp jg-ks.jceks $HOME/internal
+cp sec.dat $HOME/internal
 
 cd $BUILD_DIR
 
